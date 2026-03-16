@@ -4,219 +4,136 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora Variable 2024 - CCOO Airbus</title>
-
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
     <style>
         :root {
             --ccoo-red: #E30613;
-            --ccoo-dark: #b3050f;
+            --ccoo-dark: #6E000A;
+            --ccoo-light: #FF3B47;
+            --ccoo-blue: #005587;
+            --ccoo-green: #1A7A3A;
+            --ccoo-amber: #C07800;
             --bg-gray: #f4f4f4;
             --white: #ffffff;
         }
 
-        body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-gray);
-            margin: 0;
-            padding: 0;
-            color: #333;
-        }
+        body { font-family: Arial, Helvetica, sans-serif; background-color: var(--bg-gray); margin: 0; color: #333; }
+        header { background: linear-gradient(135deg, var(--ccoo-dark) 0%, var(--ccoo-red) 50%, var(--ccoo-light) 100%); padding: 25px 20px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .logo-container { background: var(--white); display: inline-block; padding: 10px 25px; border-radius: 12px; }
+        .logo-img { max-width: 180px; height: auto; display: block; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 30px 20px; }
+        
+        .division-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 40px; }
+        .division-card { background: var(--white); border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08); text-align: center; transition: 0.3s; cursor: pointer; border: 3px solid transparent; }
+        .division-card.active { border-color: var(--ccoo-red); background: #fff8f8; }
+        .division-card img { width: 100%; height: 150px; object-fit: contain; padding: 15px; background: #fff; }
+        
+        .calc-box { background: var(--white); max-width: 600px; margin: 0 auto; padding: 35px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); display: none; }
+        .form-grid { display: grid; gap: 15px; }
+        label { font-weight: bold; font-size: 0.85rem; color: #666; display: block; margin-bottom: 5px; text-transform: uppercase; }
+        input, select { width: 100%; padding: 14px; border: 2px solid #ddd; border-radius: 10px; font-size: 1rem; }
 
-        .header {
-            background: var(--white);
-            padding: 20px;
-            text-align: center;
-            border-bottom: 4px solid var(--ccoo-red);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .logo-img { max-width: 250px; height: auto; }
-
-        .container {
-            max-width: 1000px;
-            margin: 20px auto;
-            background: var(--white);
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        }
-
-        h2 { color: var(--ccoo-red); text-align: center; margin-bottom: 25px; text-transform: uppercase; font-weight: 900; }
-
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .full { grid-column: span 2; }
-
-        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.85rem; color: #666; }
-
-        input, select {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 1rem;
-            box-sizing: border-box;
-        }
-
-        /* Casillas rojas de entrada de datos */
-        .input-red { border-color: var(--ccoo-red); background-color: #fff9f9; }
-        .input-red:focus { outline: none; border-color: var(--ccoo-dark); }
-
-        button {
-            width: 100%;
-            padding: 16px;
-            background: var(--ccoo-red);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        button:hover { background: var(--ccoo-dark); }
-
-        .results-section { display: none; margin-top: 30px; border-top: 2px solid #eee; padding-top: 20px; }
-
-        .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-
-        .card {
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 10px;
-            border-left: 4px solid var(--ccoo-red);
-            text-align: center;
-        }
-
-        /* El total ahora es solo Colectiva + Individual */
-        .card.total { border-left-color: #28a745; background: #f0fdf4; grid-column: span 2; }
-        .card.info-blue { border-left-color: #005587; background: #f0f7ff; }
-
+        button { width: 100%; padding: 18px; background: var(--ccoo-red); color: white; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        
+        .results-section { display: none; margin-top: 30px; border-top: 2px solid #eee; padding-top: 25px; }
+        .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .card { background: #f9f9f9; padding: 18px; border-radius: 12px; border-left: 6px solid var(--ccoo-red); text-align: center; }
+        .card-ind { border-left-color: var(--ccoo-red); }
+        .card-col { border-left-color: var(--ccoo-dark); }
+        .card-100 { border-left-color: var(--ccoo-blue); }
+        .card-ben { border-left-color: var(--ccoo-amber); }
+        .card-total { border-left-color: var(--ccoo-green); background: #f0fdf4; grid-column: span 2; }
         .card h4 { margin: 0; color: #888; font-size: 0.7rem; text-transform: uppercase; }
-        .card p { margin: 8px 0 0; font-size: 1.3rem; font-weight: bold; }
+        .card p { margin: 10px 0 0; font-size: 1.3rem; font-weight: 900; }
 
-        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
-        .btn-export { flex: 1; padding: 10px; font-size: 0.8rem; background: #444; color: white; border-radius: 5px; cursor: pointer; border: none; }
+        canvas { margin-top: 25px; max-height: 280px; width: 100%; }
+        .export-group { display: flex; gap: 10px; margin-top: 25px; }
+        .btn-pdf { background: var(--ccoo-red); flex: 1; }
+        .btn-excel { background: #1A6B36; flex: 1; }
 
-        .footer { text-align: center; padding: 20px; font-size: 0.7rem; color: #999; }
-
-        @media (max-width: 500px) { .form-grid { grid-template-columns: 1fr; } .full { grid-column: span 1; } }
+        footer { text-align: center; padding: 40px 20px; font-size: 0.8rem; color: #888; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <img src="https://iili.io/quHQclf.png" alt="Logo CCOO" class="logo-img">
-    </div>
+    <header>
+        <div class="logo-container">
+            <img src="https://iili.io/quHQclf.png" id="mainLogo" alt="Logo CCOO" class="logo-img" crossorigin="anonymous">
+        </div>
+    </header>
 
     <div class="container">
         <div class="intro-text" style="text-align: center; margin-bottom: 30px;">
-            <h2>Calculadora Paga Variable 2024</h2>
-            <p>Selecciona tu División:</p>
+            <h1 style="color: var(--ccoo-red); font-weight: 900; text-transform: uppercase; margin: 0;">Calculadora Variable 2024</h1>
+            <p>Selecciona tu división para comenzar:</p>
         </div>
 
-        <div class="division-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px;">
-            <div class="division-card" id="card-ADS" onclick="selectDivision('ADS')" style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; transition: 0.3s; cursor: pointer; border: 3px solid transparent;">
-                <img src="https://iili.io/qRqHrWN.png" alt="ADS" style="width: 100%; height: 140px; object-fit: contain; padding: 10px;">
-                <h5 style="margin: 15px 0;">Defence & Space</h5>
+        <div class="division-grid">
+            <div class="division-card" id="card-ADS" onclick="selectDivision('ADS')">
+                <img src="https://iili.io/qRqHrWN.png" id="img-ADS" alt="ADS" crossorigin="anonymous">
+                <h3>Defence & Space</h3>
             </div>
-            <div class="division-card" id="card-OPS" onclick="selectDivision('OPS')" style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; transition: 0.3s; cursor: pointer; border: 3px solid transparent;">
-                <img src="https://iili.io/qRfO9vR.png" alt="Operations" style="width: 100%; height: 140px; object-fit: contain; padding: 10px;">
-                <h5 style="margin: 15px 0;">Operations (AOSL)</h5>
+            <div class="division-card" id="card-OPS" onclick="selectDivision('OPS')">
+                <img src="https://iili.io/qRfO9vR.png" id="img-OPS" alt="Operations" crossorigin="anonymous">
+                <h3>Operations (AOSL)</h3>
             </div>
-            <div class="division-card" id="card-HEL" onclick="selectDivision('HEL')" style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; transition: 0.3s; cursor: pointer; border: 3px solid transparent;">
-                <img src="https://iili.io/qRqHsgn.png" alt="Helicopters" style="width: 100%; height: 140px; object-fit: contain; padding: 10px;">
-                <h5 style="margin: 15px 0;">Helicopters</h5>
+            <div class="division-card" id="card-HEL" onclick="selectDivision('HEL')">
+                <img src="https://iili.io/qRqHsgn.png" id="img-HEL" alt="Helicopters" crossorigin="anonymous">
+                <h3>Helicopters</h3>
             </div>
-            <div class="division-card" id="card-HQ" onclick="selectDivision('HQ')" style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; transition: 0.3s; cursor: pointer; border: 3px solid transparent;">
-                <img src="https://iili.io/qRqHPft.png" alt="Airbus Group" style="width: 100%; height: 140px; object-fit: contain; padding: 10px;">
-                <h5 style="margin: 15px 0;">Airbus Group</h5>
+            <div class="division-card" id="card-HQ" onclick="selectDivision('HQ')">
+                <img src="https://iili.io/qRqHPft.png" id="img-HQ" alt="Airbus Group" crossorigin="anonymous">
+                <h3>Airbus Group</h3>
             </div>
         </div>
 
-        <div id="calculator" class="calc-box" style="display: none;">
-            <h3 id="calc-title" style="text-align: center; color: var(--ccoo-red); font-size: 1rem; margin-bottom: 20px;"></h3>
-            
+        <div id="calculator" class="calc-box">
+            <h2 id="calc-title" style="text-align: center; color: var(--ccoo-red); font-size: 1.2rem; margin-bottom: 25px;"></h2>
             <div class="form-grid">
-                <div class="full">
-                    <label>Banda Salarial:</label>
-                    <select id="banda" class="input-red">
-                        <option value="1">V.1</option>
-                        <option value="2">V.2</option>
-                        <option value="6">VI</option>
-                        <option value="8">VIII</option>
-                    </select>
-                </div>
-
-                <div class="full">
-                    <label>Salario Bruto Anual de Referencia (€):</label>
-                    <input type="number" id="salario" class="input-red" placeholder="Dato indicado en Integra">
-                </div>
-
-                <div class="full">
-                    <label>Cantidad Individual Percibida (Importe bruto carta):</label>
-                    <input type="number" id="individual" class="input-red" placeholder="Ej: 3926.77">
-                </div>
-
+                <div><label>Banda Salarial:</label><select id="banda"><option value="V1">V.1</option><option value="V2">V.2</option><option value="VI">VI</option><option value="VIII">VIII</option></select></div>
+                <div><label>Salario Anual Referencia (€):</label><input type="number" id="salario" placeholder="Dato Integra"></div>
+                <div><label>Individual en Carta (€):</label><input type="number" id="individual" placeholder="Importe bruto"></div>
                 <button onclick="ejecutarCalculo()">CALCULAR MI VARIABLE</button>
             </div>
 
             <div id="resultados" class="results-section">
                 <div class="card-grid">
-                    <div class="card">
-                        <h4>% Cumplimiento Individual</h4>
-                        <p id="res_cumplimiento"></p>
-                    </div>
-                    <div class="card">
-                        <h4>Paga Colectiva</h4>
-                        <p id="res_colectiva"></p>
-                    </div>
-                    <div class="card info-blue">
-                        <h4>Individual al 100% de objetivos</h4>
-                        <p id="res_ind100"></p>
-                    </div>
-                    <div class="card" style="border-left-color: #FFC107;">
-                        <h4>Paga de Beneficios (Info)</h4>
-                        <p id="res_beneficios"></p>
-                    </div>
-                    <div class="card total">
-                        <h4>TOTAL VARIABLE BRUTA 2024</h4>
-                        <p id="res_total" style="color: #28a745;"></p>
-                    </div>
+                    <div class="card card-ind"><h4>% Cumplimiento</h4><p id="res_cumplimiento">-</p></div>
+                    <div class="card card-col"><h4>Parte Colectiva</h4><p id="res_colectiva">-</p></div>
+                    <div class="card card-100"><h4>Individual al 100%</h4><p id="res_ind100">-</p></div>
+                    <div class="card card-ben"><h4>Beneficios (Info)</h4><p id="res_beneficios">-</p></div>
+                    <div class="card card-total"><h4>TOTAL BRUTO VARIABLE</h4><p id="res_total">-</p></div>
                 </div>
                 <canvas id="graficoVariable"></canvas>
+                
+                <div class="export-group">
+                    <button class="btn-pdf" onclick="exportarPDF()">DESCARGAR PDF ALTA CALIDAD</button>
+                    <button class="btn-excel" onclick="exportarExcel()">DESCARGAR EXCEL</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="footer">
-        © Sección Sindical CCOO Airbus<br>
-        * El Total Variable no incluye la Paga de Beneficios.
-    </div>
+    <footer>© Sección Sindical CCOO · Airbus Spain</footer>
 
     <script>
         const CONFIG = {
-            "ADS": { nombre: "Airbus Defence & Space", consecucion: 0.73, colectivoCoeff: { "1": 2.628, "2": 2.19, "6": 1.752, "8": 2.1 }, beneficios: 1738, targetInd: { "1": 8.4, "2": 7.0, "6": 5.6, "8": 1.8 } },
-            "OPS": { nombre: "Airbus Operations", consecucion: 0.92, colectivoCoeff: { "1": 3.312, "2": 2.76, "6": 2.208, "8": 4.2 }, beneficios: 3124, targetInd: { "1": 8.4, "2": 7.0, "6": 5.6, "8": 1.8 } },
-            "HEL": { nombre: "Airbus Helicopters", consecucion: 0.99, colectivoCoeff: { "1": 3.564, "2": 2.97, "6": 2.376, "8": 4.20 }, beneficios: 2487, targetInd: { "1": 8.4, "2": 7.0, "6": 5.6, "8": 1.8 } },
-            "HQ": { nombre: "Airbus Group", consecucion: 0.77, colectivoCoeff: { "1": 2.772, "2": 2.31, "6": 1.848, "8": 4.20 }, beneficios: 3124, targetInd: { "1": 8.4, "2": 7.0, "6": 5.6, "8": 1.8 } }
+            "ADS": { nombre: "Airbus Defence & Space", beneficios: 1738, col: { V1: 2.628, V2: 2.19, VI: 1.752, VIII: 2.1 }, ind: { V1: 8.4, V2: 7.0, VI: 5.6, VIII: 1.8 } },
+            "OPS": { nombre: "Airbus Operations", beneficios: 3124, col: { V1: 3.312, V2: 2.76, VI: 2.208, VIII: 4.2 }, ind: { V1: 8.4, V2: 7.0, VI: 5.6, VIII: 1.8 } },
+            "HEL": { nombre: "Airbus Helicopters", beneficios: 2487, col: { V1: 3.564, V2: 2.97, VI: 2.376, VIII: 4.2 }, ind: { V1: 8.4, V2: 7.0, VI: 5.6, VIII: 1.8 } },
+            "HQ":  { nombre: "Airbus Group", beneficios: 3124, col: { V1: 2.772, V2: 2.31, VI: 1.848, VIII: 4.2 }, ind: { V1: 8.4, V2: 7.0, VI: 5.6, VIII: 1.8 } }
         };
 
         let selectedDiv = "";
         let chartInstance = null;
+        let gData = {};
 
         function selectDivision(id) {
             selectedDiv = id;
-            document.querySelectorAll('.division-card').forEach(c => c.style.borderColor = 'transparent');
-            document.querySelectorAll('.division-card').forEach(c => c.style.background = 'white');
-            document.getElementById('card-' + id).style.borderColor = 'var(--ccoo-red)';
-            document.getElementById('card-' + id).style.background = '#fff8f8';
-            
+            document.querySelectorAll('.division-card').forEach(c => c.classList.remove('active'));
+            document.getElementById('card-' + id).classList.add('active');
             document.getElementById('calculator').style.display = 'block';
-            document.getElementById('calc-title').innerText = "Configuración: " + CONFIG[id].nombre;
+            document.getElementById('calc-title').innerText = CONFIG[id].nombre;
             document.getElementById('resultados').style.display = 'none';
         }
 
@@ -224,43 +141,111 @@
             const banda = document.getElementById("banda").value;
             const salary = parseFloat(document.getElementById("salario").value);
             const amount = parseFloat(document.getElementById("individual").value);
+            if (!salary || isNaN(amount)) return alert("Introduce los importes.");
 
-            if (!salary || isNaN(amount)) return alert("Por favor, introduce los importes.");
+            const data = CONFIG[selectedDiv];
+            const colRes = salary * data.col[banda] / 100;
+            const ind100 = salary * data.ind[banda] / 100;
+            const pct = (amount / ind100) * 100;
+            const total = colRes + amount;
 
-            const divData = CONFIG[selectedDiv];
-            
-            // 1. Parte Colectiva (basada en coeficientes SIPA compartidos)
-            const collectiveResult = salary * divData.colectivoCoeff[banda] / 100;
-            
-            // 2. Parte Individual al 100% (Salario * Target Banda / 100)
-            const individual100 = salary * divData.targetInd[banda] / 100;
+            gData = { div: data.nombre, banda, salary, colRes, ind100, pct, total, ben: data.beneficios, amount };
 
-            // 3. % Cumplimiento (Lo cobrado / Lo que sería al 100%)
-            const individualPercent = (amount / individual100) * 100;
-            
-            const total = collectiveResult + amount;
-
-            document.getElementById("res_cumplimiento").innerText = individualPercent.toFixed(2) + "%";
-            document.getElementById("res_colectiva").innerText = collectiveResult.toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " €";
-            document.getElementById("res_ind100").innerText = individual100.toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " €";
-            document.getElementById("res_beneficios").innerText = divData.beneficios.toLocaleString('es-ES') + " €";
-            document.getElementById("res_total").innerText = total.toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " €";
+            const eur = (n) => n.toLocaleString('es-ES', { minimumFractionDigits: 2 }) + " €";
+            document.getElementById("res_cumplimiento").innerText = pct.toFixed(2) + " %";
+            document.getElementById("res_colectiva").innerText = eur(colRes);
+            document.getElementById("res_ind100").innerText = eur(ind100);
+            document.getElementById("res_beneficios").innerText = eur(data.beneficios);
+            document.getElementById("res_total").innerText = eur(total);
             
             document.getElementById("resultados").style.display = "block";
-            renderChart(collectiveResult, amount, divData.beneficios);
+            updateChart(colRes, amount, data.beneficios);
         }
 
-        function renderChart(c, i, b) {
+        function updateChart(c, i, b) {
             const ctx = document.getElementById("graficoVariable").getContext("2d");
             if (chartInstance) chartInstance.destroy();
             chartInstance = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: ['Colectiva', 'Individual', 'Beneficios'],
-                    datasets: [{ data: [c, i, b], backgroundColor: ['#E30613', '#333', '#FFC107'] }]
+                    datasets: [{ data: [c, i, b], backgroundColor: ['#E30613', '#6E000A', '#C07800'], borderWidth: 0 }]
                 },
-                options: { plugins: { legend: { position: 'bottom' } }, cutout: '65%' }
+                options: { plugins: { legend: { position: 'bottom' } }, cutout: '70%' }
             });
+        }
+
+        function exportarExcel() {
+            let csv = "\uFEFFConcepto;Valor\n";
+            csv += `Division;${gData.div}\nBanda;${gData.banda}\nSalario Ref;${gData.salary}\n% Cumplimiento;${gData.pct.toFixed(2)}%\nColectiva;${gData.colRes.toFixed(2)}\nIndividual 100%;${gData.ind100.toFixed(2)}\nBeneficios;${gData.ben}\nTOTAL BRUTO;${gData.total.toFixed(2)}`;
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `Variable_CCOO.csv`;
+            link.click();
+        }
+
+        function exportarPDF() {
+            const chartImg = document.getElementById('graficoVariable').toDataURL("image/png");
+            const logoCCOO = document.getElementById('mainLogo').src;
+            const logoDiv = document.getElementById('img-' + selectedDiv).src;
+            const eur = (n) => n.toLocaleString('es-ES', { minimumFractionDigits: 2 }) + " €";
+
+            const win = window.open("", "_blank");
+            win.document.write(`
+                <html>
+                <head>
+                    <title>Informe Variable CCOO</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 0; margin: 0; color: #333; }
+                        .pdf-header { background: linear-gradient(135deg, #6E000A 0%, #E30613 50%, #FF3B47 100%); padding: 30px; display: flex; justify-content: space-between; align-items: center; }
+                        .pdf-logo { background: white; padding: 10px; border-radius: 8px; height: 60px; }
+                        .content { padding: 40px; }
+                        h1 { color: #E30613; border-bottom: 2px solid #eee; padding-bottom: 10px; font-size: 24px; }
+                        .info-row { display: flex; justify-content: space-between; padding: 12px; background: #f9f9f9; margin-bottom: 8px; border-radius: 6px; }
+                        .label { font-weight: bold; font-size: 12px; color: #666; text-transform: uppercase; }
+                        .value { font-weight: bold; font-size: 16px; }
+                        .total-row { background: #f0fdf4; border-left: 6px solid #1A7A3A; padding: 20px; margin-top: 20px; }
+                        .total-value { color: #1A7A3A; font-size: 24px; font-weight: 900; }
+                        .chart-box { text-align: center; margin-top: 30px; }
+                        .footer { text-align: center; font-size: 10px; color: #999; margin-top: 50px; }
+                        @media print { .no-print { display: none; } }
+                    </style>
+                </head>
+                <body onload="window.print()">
+                    <div class="pdf-header">
+                        <img src="${logoCCOO}" class="pdf-logo">
+                        <img src="${logoDiv}" class="pdf-logo">
+                    </div>
+                    <div class="content">
+                        <h1>INFORME DE RETRIBUCIÓN VARIABLE 2024</h1>
+                        <p style="margin-bottom:30px;"><b>División:</b> ${gData.div} | <b>Banda:</b> ${gData.banda}</p>
+                        
+                        <div class="info-row"><span class="label">Salario Referencia</span><span class="value">${eur(gData.salary)}</span></div>
+                        <div class="info-row"><span class="label">% Cumplimiento Individual</span><span class="value">${gData.pct.toFixed(2)} %</span></div>
+                        <div class="info-row"><span class="label">Parte Colectiva</span><span class="value">${eur(gData.colRes)}</span></div>
+                        <div class="info-row"><span class="label">Parte Individual al 100%</span><span class="value">${eur(gData.ind100)}</span></div>
+                        <div class="info-row"><span class="label">Paga Beneficios (Informativo)</span><span class="value">${eur(gData.ben)}</span></div>
+                        
+                        <div class="total-row">
+                            <span class="label">TOTAL VARIABLE BRUTA</span><br>
+                            <span class="total-value">${eur(gData.total)}</span>
+                        </div>
+
+                        <div class="chart-box">
+                            <p class="label">Distribución Visual</p>
+                            <img src="${chartImg}" style="width: 300px;">
+                        </div>
+
+                        <div class="footer">
+                            Documento generado por la Sección Sindical CCOO Airbus el ${new Date().toLocaleDateString()}<br>
+                            Este cálculo es orientativo basado en coeficientes consolidados.
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `);
+            win.document.close();
         }
     </script>
 </body>
