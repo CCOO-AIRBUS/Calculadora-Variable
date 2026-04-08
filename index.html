@@ -68,11 +68,38 @@
             letter-spacing: -1px;
         }
         
-        .section-title p { color: #666; margin-top: 10px; max-width: 800px; margin-left: auto; margin-right: auto; font-size: 0.95rem; }
+        .section-title p { color: #666; margin-top: 10px; max-width: 850px; margin-left: auto; margin-right: auto; font-size: 0.95rem; }
 
         .subtitle-main { font-weight: bold; display: block; margin-bottom: 4px; color: #444; }
         .subtitle-info { display: block; margin-bottom: 6px; }
         .subtitle-privacy { font-size: 0.85rem; font-style: italic; display: block; color: #888; }
+
+        /* Estilos para la sección de instrucciones optimizados */
+        .instructions-section {
+            max-width: 850px;
+            margin: 0 auto 40px;
+            color: #555;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Mantiene el bloque centrado */
+        }
+        .instruction-header {
+            text-align: center;
+            font-size: 1.25rem; /* Ligeramente más grande */
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .instruction-options-wrapper {
+            width: 100%;
+            max-width: 600px; /* Limita el ancho para que el alineado a la izquierda se vea bien */
+            text-align: left; /* Alineación a la izquierda solicitada */
+        }
+        .instruction-option-1, .instruction-option-2 {
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+        .instructions-section strong { color: var(--ccoo-red); }
 
         .division-grid {
             display: grid;
@@ -164,7 +191,6 @@
 
         .results-panel { display: none; animation: fadeUp 0.6s ease-out; }
         
-        /* Reestructuración a 3 columnas para cubrir el espacio visualmente */
         .results-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -191,7 +217,6 @@
         .card-col { border-left-color: var(--ccoo-dark); }
         .card-100 { border-left-color: var(--ccoo-blue); }
         
-        /* Card Total resaltada ocupando el ancho completo de las 3 columnas */
         .card-total { 
             grid-column: span 3; 
             border-left: 12px solid var(--ccoo-green); 
@@ -261,7 +286,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Ajustes responsivos para mantener la armonía */
         @media (max-width: 900px) {
             .results-grid { grid-template-columns: repeat(2, 1fr); }
             .card-100 { grid-column: span 2; }
@@ -273,6 +297,7 @@
             .card-ind, .card-col, .card-100, .card-total { grid-column: span 1; }
             .card-total p { font-size: 2.2rem !important; }
             .section-title h1 { font-size: 2.2rem; }
+            .instruction-options-wrapper { text-align: center; }
         }
     </style>
 </head>
@@ -322,6 +347,15 @@
         </div>
     </div>
 
+    <!-- Sección Informativa MyHR y Nómina (Reestructurada) -->
+    <div class="instructions-section">
+        <div class="instruction-header">Para un resultado lo más preciso posible</div>
+        <div class="instruction-options-wrapper">
+            <div class="instruction-option-1"><strong>Opción 1:</strong> Accede a MyHR - Mi Perfil - Salario y Promociones - Salario Base Anual</div>
+            <div class="instruction-option-2"><strong>Opción 2:</strong> Salario base de tu nómina x 14 pagas</div>
+        </div>
+    </div>
+
     <!-- Panel de Cálculo -->
     <div class="calculator-panel" id="calcPanel">
         <div class="form-grid">
@@ -335,8 +369,8 @@
                 </select>
             </div>
             <div class="form-group">
-                <label>Salario Bruto Anual Año Anterior (€)</label>
-                <input type="number" id="salario" class="input-red" placeholder="Dato de Integra o carta" step="any">
+                <label>Salario Base Bruto Anual Año Anterior (€)</label>
+                <input type="number" id="salario" class="input-red" placeholder="Dato de MyHR o Nómina" step="any">
             </div>
             <div class="form-group">
                 <label>Cantidad Individual en Carta (€)</label>
@@ -346,7 +380,7 @@
         </div>
     </div>
 
-    <!-- Resultados Reestructurados -->
+    <!-- Resultados -->
     <div class="results-panel" id="resultsPanel">
         <div class="results-grid">
             <div class="result-card card-ind">
@@ -494,7 +528,7 @@
     function exportCSV() {
         if (!results) return;
         const csvRows = [
-            ["Division", results.division], ["Banda", results.banda], ["Salario Referencia", results.salario],
+            ["Division", results.division], ["Banda", results.banda], ["Salario Base Referencia", results.salario],
             ["% Cumplimiento", results.pct.toFixed(2)], ["Parte Colectiva", results.colectiva.toFixed(2)],
             ["Individual Percibida", results.indReal.toFixed(2)], ["Individual al 100%", results.ind100.toFixed(2)],
             ["Total Variable", results.total.toFixed(2)]
@@ -505,7 +539,7 @@
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.download = "paga_variable_ccoo.csv";
+        link.download = "paga_variable_airbus_ccoo.csv";
         link.click();
     }
 
@@ -518,7 +552,7 @@
 ╠══════════════════════════════════════════════════════════╣
   DIVISIÓN:      ${l.division}
   BANDA:         ${l.banda}
-  SALARIO REF:   ${nF.format(l.salario)} €
+  SALARIO BASE:  ${nF.format(l.salario)} €
   IND. CARTA:    ${nF.format(l.indReal)} €
 ╟──────────────────────────────────────────────────────────╢
   % CUMPLIMIENTO:        ${nF.format(l.pct)} %
@@ -533,7 +567,7 @@
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.download = "paga_variable_ccoo.txt";
+        link.download = "paga_variable_airbus_ccoo.txt";
         link.click();
     }
 
@@ -582,14 +616,14 @@
         ctx.font = "14px Arial"; ctx.fillStyle = "#666";
         ctx.fillText("CCOO SECCIÓN SINDICAL INTEREMPRESAS", 40, 205);
 
-        ctx.fillStyle = "#F9F9F9"; ctx.fillRect(40, 230, 714, 100);
+        ctx.fillStyle = "#F9F9F9"; ctx.fillRect(40, 230, 714, 110);
         ctx.fillStyle = "#E30613"; ctx.font = "bold 12px Arial";
         ctx.fillText("DATOS DE ENTRADA", 55, 255);
         ctx.fillStyle = "#333"; ctx.font = "14px Arial";
         ctx.fillText(`División: ${results.division}`, 55, 280);
-        ctx.fillText(`Banda: ${results.banda}`, 300, 280);
-        ctx.fillText(`Salario Ref: ${nF.format(results.salario)} €`, 55, 305);
-        ctx.fillText(`Individual Percibida: ${nF.format(results.indReal)} €`, 300, 305);
+        ctx.fillText(`Banda: ${results.banda}`, 350, 280);
+        ctx.fillText(`Salario Base: ${nF.format(results.salario)} €`, 55, 310);
+        ctx.fillText(`Individual Percibida: ${nF.format(results.indReal)} €`, 350, 310);
 
         const drawRow = (y, lbl, val, clr) => {
             ctx.fillStyle = "#fff";
@@ -603,18 +637,18 @@
             ctx.fillText(val, 65, y + 50);
         };
 
-        drawRow(350, "% Cumplimiento tras calibración", nF.format(results.pct) + " %", "#E30613");
-        drawRow(420, "Parte Colectiva", nF.format(results.colectiva) + " €", "#6E000A");
-        drawRow(490, "Parte Individual al 100%", nF.format(results.ind100) + " €", "#005587");
+        drawRow(360, "% Cumplimiento tras calibración", nF.format(results.pct) + " %", "#E30613");
+        drawRow(430, "Parte Colectiva", nF.format(results.colectiva) + " €", "#6E000A");
+        drawRow(500, "Parte Individual al 100%", nF.format(results.ind100) + " €", "#005587");
 
-        ctx.fillStyle = "#f0fdf4"; ctx.fillRect(40, 560, 714, 100);
-        ctx.fillStyle = "#1A7A3A"; ctx.fillRect(40, 560, 10, 100);
+        ctx.fillStyle = "#f0fdf4"; ctx.fillRect(40, 580, 714, 100);
+        ctx.fillStyle = "#1A7A3A"; ctx.fillRect(40, 580, 10, 100);
         ctx.font = "bold 14px Arial";
-        ctx.fillText("TOTAL RETRIBUCIÓN VARIABLE BRUTA", 65, 595);
+        ctx.fillText("TOTAL RETRIBUCIÓN VARIABLE BRUTA", 65, 615);
         ctx.font = "bold 34px Arial";
-        ctx.fillText(nF.format(results.total) + " €", 65, 640);
+        ctx.fillText(nF.format(results.total) + " €", 65, 660);
 
-        const cX = 550, cY = 880, r = 85, t = 35;
+        const cX = 550, cY = 900, r = 85, t = 35;
         const totalV = results.colectiva + results.indReal;
         const slices = [results.colectiva, results.indReal];
         const clrs = ['#E30613', '#6E000A'];
